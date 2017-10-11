@@ -27,15 +27,31 @@ class SensorService : Service(), SensorEventListener {
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
-        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
-        startForegroundService()
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        val shouldStop = intent.getBooleanExtra("stop", false)
+
+        if(!shouldStop) {
+            registerSensor()
+            startForegroundService()
+        } else {
+            stopForegroundService()
+        }
+
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun startForegroundService() {
+    private fun registerSensor() {
+        mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
+    private fun stopForegroundService() {
+        stopForeground(true)
+        stopSelf()
+    }
+
+    private fun startForegroundService() {
         val notificationIntent = Intent(this, SettingsActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
