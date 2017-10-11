@@ -19,7 +19,6 @@
             </intent-filter>
         </activity>
 
-		<activity android:name=".SensorActivity"/>
+		<service android:name=".SensorService"/>
     </application>
-
 </manifest>

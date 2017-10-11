@@ -1,33 +1,53 @@
 package pozzo.apps.playbacksensor
 
-import android.app.Activity
+import android.app.Notification
+import android.app.Service
 import android.content.Context
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Bundle
-import android.widget.FrameLayout
-import android.content.Intent
 import android.os.Handler
+import android.os.IBinder
 import android.view.KeyEvent
+import android.app.PendingIntent
 
 /**
  * @author galien
  * @since 08/10/17.
  */
-class SensorActivity : Activity(), SensorEventListener {
+class SensorService : Service(), SensorEventListener {
+
     private lateinit var mSensorManager: SensorManager
     private lateinit var mProximity: Sensor
     private var lastValue = -1F
     private var countIgnoreRequest = 1
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(FrameLayout(this))
+    override fun onBind(intent: Intent?): IBinder = null!!
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
+        startForegroundService()
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    fun startForegroundService() {
+        val notificationIntent = Intent(this, SettingsActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+
+        val notification = Notification.Builder(this)
+                .setContentTitle("Title")
+                .setContentText("Not not not notification")
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentIntent(pendingIntent)
+                .setTicker("Ticker")
+                .setPriority(Notification.PRIORITY_LOW)
+                .build()
+
+        startForeground(0x22, notification)
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
@@ -73,13 +93,8 @@ class SensorActivity : Activity(), SensorEventListener {
         lastValue = event.values[0]
     }
 
-    override fun onResume() {
-        super.onResume()
-        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
-    }
-
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
+        super.onDestroy()
         mSensorManager.unregisterListener(this)
     }
 
