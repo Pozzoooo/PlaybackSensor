@@ -21,6 +21,7 @@ class SensorService : Service(), SensorEventListener {
 
     private lateinit var mSensorManager: SensorManager
     private lateinit var mProximity: Sensor
+    private var storedValue = -1F
     private var lastValue = -1F
     private var countIgnoreRequest = 1
 
@@ -55,42 +56,39 @@ class SensorService : Service(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        val distance = event.values[0]
+        lastValue = event.values[1]
         val size = event.values.size
         val accuracy = event.accuracy
-        println("size: $size distance: $distance ${event.values[1]} ${event.values[2]} " +
-                "accuracy: $accuracy lastValue $lastValue countIgnoreRequest $countIgnoreRequest")
+        println("size: $size distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
+                "accuracy: $accuracy storedValue $storedValue countIgnoreRequest $countIgnoreRequest")
 
         //todo fix overflow
         countIgnoreRequest = --countIgnoreRequest
         if (countIgnoreRequest >= 0) {
             return
         }
+        countIgnoreRequest = 1
         //todo what about using timestamp?
 
-        //todo is there a smarted way with ignore involved
-        if(lastValue == -1F) {
-            //todo post message instead
-            Handler().postDelayed({
-                println("lastValue $lastValue value: $distance")
+        //todo post message instead
+        Handler().postDelayed({
+            println("2- storedValue $storedValue value: $lastValue")
+            //todo is ignore a good approach?
 
-                if (lastValue == -1F) {
-                    return@postDelayed
-                }
+            if (storedValue == -1F) {
+                return@postDelayed
+            }
 
-                if (lastValue != distance) {
-                    sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_NEXT)
-                }
+            if (storedValue != lastValue) {
+                sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_NEXT)
+            }
 
-                if (lastValue == distance) {
-                    sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-                    //todo is ignore a good approach?
-                    countIgnoreRequest = 1
-                }
-                lastValue = -1F
-            }, 500)
-        }
-        lastValue = event.values[0]
+            if (storedValue == lastValue) {
+                sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
+            }
+            storedValue = -1F
+        }, 500)
+        storedValue = event.values[1]
     }
 
     override fun onDestroy() {
