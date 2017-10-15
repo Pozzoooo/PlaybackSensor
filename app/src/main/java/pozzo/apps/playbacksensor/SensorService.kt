@@ -1,6 +1,7 @@
 package pozzo.apps.playbacksensor
 
 import android.app.Notification
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -8,10 +9,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Handler
 import android.os.IBinder
-import android.view.KeyEvent
-import android.app.PendingIntent
 
 /**
  * @author galien
@@ -21,16 +19,16 @@ class SensorService : Service(), SensorEventListener {
 
     private lateinit var mSensorManager: SensorManager
     private lateinit var mProximity: Sensor
-    private var storedValue = -1F
-    private var lastValue = -1F
+    private lateinit var eventHandler: EventHandler
     private var countIgnoreRequest = 1
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        val shouldStop = intent.getBooleanExtra("stop", false)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val shouldStop = intent?.getBooleanExtra("stop", false) ?: false
 
         if(!shouldStop) {
+            setupEventHandler()
             registerSensor()
             startForegroundService()
         } else {
@@ -67,60 +65,33 @@ class SensorService : Service(), SensorEventListener {
         startForeground(0x22, notification)
     }
 
+    private fun setupEventHandler() {
+        eventHandler = EventHandler(this)
+    }
+
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
         println("accuracy change: $accuracy")
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        lastValue = event.values[1]
+        eventHandler.lastValue = event.values[1]
         val size = event.values.size
         val accuracy = event.accuracy
         println("size: $size distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
-                "accuracy: $accuracy storedValue $storedValue countIgnoreRequest $countIgnoreRequest")
+                "accuracy: $accuracy storedValue ${eventHandler.storedValue} countIgnoreRequest $countIgnoreRequest")
 
-        //todo fix overflow
         countIgnoreRequest = --countIgnoreRequest
         if (countIgnoreRequest >= 0) {
             return
         }
         countIgnoreRequest = 1
-        //todo what about using timestamp?
 
-        //todo post message instead
-        Handler().postDelayed({
-            println("2- storedValue $storedValue value: $lastValue")
-            //todo is ignore a good approach?
-
-            if (storedValue == -1F) {
-                return@postDelayed
-            }
-
-            if (storedValue != lastValue) {
-                sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_NEXT)
-            }
-
-            if (storedValue == lastValue) {
-                sendMediaButton(getApplicationContext(), KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE)
-            }
-            storedValue = -1F
-        }, 500)
-        storedValue = event.values[1]
+        eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
+        eventHandler.storedValue = event.values[1]
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mSensorManager.unregisterListener(this)
-    }
-
-    private fun sendMediaButton(context: Context, keyCode: Int) {
-        var keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
-        var intent = Intent(Intent.ACTION_MEDIA_BUTTON)
-        intent.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent)
-        context.sendOrderedBroadcast(intent, null)
-
-        keyEvent = KeyEvent(KeyEvent.ACTION_UP, keyCode)
-        intent = Intent(Intent.ACTION_MEDIA_BUTTON)
-        intent.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent)
-        context.sendOrderedBroadcast(intent, null)
     }
 }
