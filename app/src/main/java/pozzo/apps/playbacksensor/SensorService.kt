@@ -19,7 +19,7 @@ class SensorService : Service(), SensorEventListener {
 
     private lateinit var mSensorManager: SensorManager
     private lateinit var mProximity: Sensor
-    private lateinit var eventHandler: EventHandler
+    private var eventHandler: EventHandler? = null
     //todo need to understand if 2 is going to happen for any device
     private var countIgnoreRequest = 2
 
@@ -28,12 +28,12 @@ class SensorService : Service(), SensorEventListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val shouldStop = intent?.getBooleanExtra("stop", false) ?: false
 
-        if(!shouldStop) {
+        if (shouldStop) {
+            stopForegroundService()
+        } else if(eventHandler == null) {
             setupEventHandler()
             registerSensor()
             startForegroundService()
-        } else {
-            stopForegroundService()
         }
 
         return super.onStartCommand(intent, flags, startId)
@@ -77,11 +77,11 @@ class SensorService : Service(), SensorEventListener {
     //todo it happened again, it switches the moment when he is ignoring request
     //      should I fix it using a timer? It would help on the initialization doubt as well
     override fun onSensorChanged(event: SensorEvent) {
-        eventHandler.lastValue = event.values[0]
+        eventHandler?.lastValue = event.values[0]
         Log.d("size: ${event.values.size} " +
                 "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
                 "accuracy: ${event.accuracy} " +
-                "storedValue ${eventHandler.storedValue} " +
+                "storedValue ${eventHandler?.storedValue} " +
                 "countIgnoreRequest $countIgnoreRequest")
 
         countIgnoreRequest = --countIgnoreRequest
@@ -90,8 +90,8 @@ class SensorService : Service(), SensorEventListener {
         }
         countIgnoreRequest = 1
 
-        eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
-        eventHandler.storedValue = event.values[0]
+        eventHandler?.sendMessageDelayed(eventHandler?.obtainMessage(), 500)
+        eventHandler?.storedValue = event.values[0]
     }
 
     override fun onDestroy() {
