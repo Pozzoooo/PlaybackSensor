@@ -70,15 +70,16 @@ class SensorService : Service(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-        println("accuracy change: $accuracy")
+        Log.d("accuracy change: $accuracy")
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        eventHandler.lastValue = event.values[1]
-        val size = event.values.size
-        val accuracy = event.accuracy
-        println("size: $size distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
-                "accuracy: $accuracy storedValue ${eventHandler.storedValue} countIgnoreRequest $countIgnoreRequest")
+        eventHandler.lastValue = event.values[0]
+        Log.d("size: ${event.values.size} " +
+                "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
+                "accuracy: ${event.accuracy} " +
+                "storedValue ${eventHandler.storedValue} " +
+                "countIgnoreRequest $countIgnoreRequest")
 
         countIgnoreRequest = --countIgnoreRequest
         if (countIgnoreRequest >= 0) {
@@ -87,7 +88,7 @@ class SensorService : Service(), SensorEventListener {
         countIgnoreRequest = 1
 
         eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
-        eventHandler.storedValue = event.values[1]
+        eventHandler.storedValue = event.values[0]
     }
 
     override fun onDestroy() {

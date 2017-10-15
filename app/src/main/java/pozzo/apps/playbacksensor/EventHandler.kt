@@ -15,7 +15,7 @@ class EventHandler(private val context: Context): Handler(context.mainLooper) {
     var lastValue = -1F
 
     override fun handleMessage(msg: Message?) {
-        println("2- storedValue $storedValue value: $lastValue")
+        Log.d("2- storedValue $storedValue value: $lastValue")
 
         if (storedValue == -1F) {
             return
