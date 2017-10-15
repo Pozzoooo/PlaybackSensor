@@ -12,6 +12,8 @@ import android.hardware.SensorManager
 import android.os.IBinder
 
 /**
+ * todo in doubt about creating a real architecture for this app, its kind of too simple
+ *
  * @author galien
  * @since 08/10/17.
  */

@@ -9,6 +9,9 @@ import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
 
 /**
+ * todo need to create an image to explain how to use it :(
+ *      I can maybe even add to the main screen, as I don't know what else I can add
+ *
  * @author galien
  * @since 15/10/17.
  */
@@ -41,7 +44,7 @@ class SettingsActivity : AppCompatPreferenceActivity(), SharedPreferences.OnShar
             PreferenceFragment::class.java.name == fragmentName || GeneralPreferenceFragment::class.java.name == fragmentName
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
-        if (key == "enabled") {
+        if (key == "enabled") {//todo extract settings name
             val runningDialog = sharedPreferences.getBoolean("enabled", true)
             if (runningDialog) {
                 startService()

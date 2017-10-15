@@ -31,6 +31,7 @@ class EventHandler(private val context: Context): Handler(context.mainLooper) {
         storedValue = -1F
     }
 
+    //todo this is nice, I could extract it to a tools library
     private fun sendMediaButton(context: Context, keyCode: Int) {
         var keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keyCode)
         var intent = Intent(Intent.ACTION_MEDIA_BUTTON)

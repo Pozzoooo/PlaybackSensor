@@ -3,6 +3,8 @@ package pozzo.apps.playbacksensor
 import android.util.Log
 
 /**
+ * todo don't I have it on any of my libraries?
+ *
  * @author galien
  * @since 15/10/17.
  */
