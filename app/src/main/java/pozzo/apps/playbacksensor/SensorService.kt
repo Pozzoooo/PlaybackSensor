@@ -20,7 +20,8 @@ class SensorService : Service(), SensorEventListener {
     private lateinit var mSensorManager: SensorManager
     private lateinit var mProximity: Sensor
     private lateinit var eventHandler: EventHandler
-    private var countIgnoreRequest = 1
+    //todo need to understand if 2 is going to happen for any device
+    private var countIgnoreRequest = 2
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
@@ -73,6 +74,8 @@ class SensorService : Service(), SensorEventListener {
         Log.d("accuracy change: $accuracy")
     }
 
+    //todo it happened again, it switches the moment when he is ignoring request
+    //      should I fix it using a timer? It would help on the initialization doubt as well
     override fun onSensorChanged(event: SensorEvent) {
         eventHandler.lastValue = event.values[0]
         Log.d("size: ${event.values.size} " +
