@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
+import pozzo.apps.tools.Log
 
 /**
  * todo need to create an image to explain how to use it :(
@@ -19,6 +20,7 @@ class SettingsActivity : AppCompatPreferenceActivity(), SharedPreferences.OnShar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.SHOW_LOGS = BuildConfig.DEBUG
         if (isEnabled()) {
             startService()
         }

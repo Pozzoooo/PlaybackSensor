@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Message
 import android.view.KeyEvent
+import pozzo.apps.tools.Log
 
 /**
  * @author galien

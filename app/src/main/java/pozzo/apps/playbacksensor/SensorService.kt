@@ -10,6 +10,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
+import pozzo.apps.tools.Log
 
 /**
  * todo in doubt about creating a real architecture for this app, its kind of too simple
