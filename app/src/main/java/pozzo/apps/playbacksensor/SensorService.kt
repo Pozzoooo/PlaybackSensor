@@ -53,6 +53,7 @@ class SensorService : Service(), SensorEventListener {
         stopSelf()
     }
 
+    //todo add a toggle directly on the notification
     private fun startForegroundService() {
         val notificationIntent = Intent(this, SettingsActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
