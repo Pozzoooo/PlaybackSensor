@@ -13,8 +13,6 @@ import android.os.IBinder
 import pozzo.apps.tools.Log
 
 /**
- * todo in doubt about creating a real architecture for this app, its kind of too simple
- *
  * @author galien
  * @since 08/10/17.
  */
@@ -23,8 +21,7 @@ class SensorService : Service(), SensorEventListener {
     private lateinit var mSensorManager: SensorManager
     private lateinit var mProximity: Sensor
     private var eventHandler: EventHandler? = null
-    //todo need to understand if 2 is going to happen for any device
-    private var countIgnoreRequest = 2
+    private lateinit var ignoreRequestHanlder: IgnoreRequestHandler
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
@@ -34,7 +31,7 @@ class SensorService : Service(), SensorEventListener {
         if (shouldStop) {
             stopForegroundService()
         } else if(eventHandler == null) {
-            setupEventHandler()
+            setupHandlers()
             registerSensor()
             startForegroundService()
         }
@@ -70,8 +67,9 @@ class SensorService : Service(), SensorEventListener {
         startForeground(0x22, notification)
     }
 
-    private fun setupEventHandler() {
+    private fun setupHandlers() {
         eventHandler = EventHandler(this)
+        ignoreRequestHanlder = IgnoreRequestHandler(this)
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
@@ -86,14 +84,13 @@ class SensorService : Service(), SensorEventListener {
                 "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
                 "accuracy: ${event.accuracy} " +
                 "storedValue ${eventHandler?.storedValue} " +
-                "countIgnoreRequest $countIgnoreRequest")
+                "countIgnoreRequest ${ignoreRequestHanlder.countIgnoreRequest}")
 
-        countIgnoreRequest = --countIgnoreRequest
-        if (countIgnoreRequest >= 0) {
+        if (!ignoreRequestHanlder.shouldProcessEvent()) {
             return
         }
-        countIgnoreRequest = 1
 
+        //todo what about keep holding for some more time and lock/unlock screen?
         eventHandler?.sendMessageDelayed(eventHandler?.obtainMessage(), 500)
         eventHandler?.storedValue = event.values[0]
     }
