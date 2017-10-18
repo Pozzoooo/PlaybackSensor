@@ -36,9 +36,7 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
     }
 
     private fun stopService() {
-        val intent = Intent(this, SensorService::class.java)
-        intent.putExtra("stop", true)
-        startService(intent)
+        startService(SensorService.getStopIntent(this))
     }
 
     override fun onIsMultiPane(): Boolean = isXLargeTablet(this)

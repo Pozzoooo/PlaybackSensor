@@ -17,10 +17,17 @@ import pozzo.apps.tools.Log
  * @since 08/10/17.
  */
 class SensorService : Service(), SensorEventListener {
+    companion object {
+        fun getStopIntent(context: Context): Intent {
+            val intent = Intent(context, SensorService::class.java)
+            intent.putExtra("stop", true)
+            return intent
+        }
+    }
 
-    private lateinit var mSensorManager: SensorManager
+    private var mSensorManager: SensorManager? = null
     private lateinit var mProximity: Sensor
-    private var eventHandler: EventHandler? = null
+    private lateinit var eventHandler: EventHandler
     private lateinit var ignoreRequestHanlder: IgnoreRequestHandler
 
     override fun onBind(intent: Intent?): IBinder = null!!
@@ -30,7 +37,7 @@ class SensorService : Service(), SensorEventListener {
 
         if (shouldStop) {
             stopForegroundService()
-        } else if(eventHandler == null) {
+        } else if(mSensorManager == null) {
             setupHandlers()
             registerSensor()
             startForegroundService()
@@ -41,8 +48,8 @@ class SensorService : Service(), SensorEventListener {
 
     private fun registerSensor() {
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
-        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
+        mProximity = mSensorManager!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+        mSensorManager!!.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     private fun stopForegroundService() {
@@ -50,18 +57,26 @@ class SensorService : Service(), SensorEventListener {
         stopSelf()
     }
 
-    //todo add a toggle directly on the notification
+    //todo now I need that the stop intent first turn the persisted enbabled flag to off and then stop
     private fun startForegroundService() {
-        val notificationIntent = Intent(this, SettingsActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
+        val pendingIntentToOpenMainActivity =
+                PendingIntent.getActivity(this, 0, intentSettingsActivity, 0)
+
+        val intentStopSensor = getStopIntent(this)
+        val pendingIntentStopSensor = PendingIntent.getService(this, 0, intentStopSensor, 0)
+        val action = Notification.Action
+                .Builder(R.mipmap.ic_launcher_round, "Stop", pendingIntentStopSensor)
+                .build()
 
         val notification = Notification.Builder(this)
                 .setContentTitle("Title")
                 .setContentText("Not not not notification")
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentIntent(pendingIntent)
+                .setContentIntent(pendingIntentToOpenMainActivity)
                 .setTicker("Ticker")
                 .setPriority(Notification.PRIORITY_LOW)
+                .addAction(action)
                 .build()
 
         startForeground(0x22, notification)
@@ -79,11 +94,12 @@ class SensorService : Service(), SensorEventListener {
     //todo it happened again, it switches the moment when he is ignoring request
     //      should I fix it using a timer? It would help on the initialization doubt as well
     override fun onSensorChanged(event: SensorEvent) {
-        eventHandler?.lastValue = event.values[0]
+        //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
+        eventHandler.lastValue = event.values[0]
         Log.d("size: ${event.values.size} " +
                 "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
                 "accuracy: ${event.accuracy} " +
-                "storedValue ${eventHandler?.storedValue} " +
+                "storedValue ${eventHandler.storedValue} " +
                 "countIgnoreRequest ${ignoreRequestHanlder.countIgnoreRequest}")
 
         if (!ignoreRequestHanlder.shouldProcessEvent()) {
@@ -91,12 +107,12 @@ class SensorService : Service(), SensorEventListener {
         }
 
         //todo what about keep holding for some more time and lock/unlock screen?
-        eventHandler?.sendMessageDelayed(eventHandler?.obtainMessage(), 500)
-        eventHandler?.storedValue = event.values[0]
+        eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
+        eventHandler.storedValue = event.values[0]
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mSensorManager.unregisterListener(this)
+        mSensorManager?.unregisterListener(this)
     }
 }
