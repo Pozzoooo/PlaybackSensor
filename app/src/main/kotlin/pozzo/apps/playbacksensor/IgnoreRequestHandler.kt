@@ -12,12 +12,12 @@ import pozzo.apps.tools.Log
 class IgnoreRequestHandler(context: Context): Handler(context.mainLooper) {
     companion object {
         private const val MESSAGE_ID = 199
+        private const val RESET_DELAY = 15000L
     }
 
     var countIgnoreRequest = 2
         private set
 
-    private val RESET_DELAY = 15000L
 
     fun shouldProcessEvent(): Boolean {
         countRequest()
