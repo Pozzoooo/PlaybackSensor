@@ -91,8 +91,6 @@ class SensorService : Service(), SensorEventListener {
         Log.d("accuracy change: $accuracy")
     }
 
-    //todo it happened again, it switches the moment when he is ignoring request
-    //      should I fix it using a timer? It would help on the initialization doubt as well
     override fun onSensorChanged(event: SensorEvent) {
         //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
         eventHandler.lastValue = event.values[0]
