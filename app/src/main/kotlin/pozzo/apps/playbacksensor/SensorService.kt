@@ -10,6 +10,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
+import android.preference.PreferenceManager
 import pozzo.apps.tools.Log
 
 /**
@@ -19,6 +20,8 @@ import pozzo.apps.tools.Log
  * todo integrate splunk mint
  * todo integrate firebase
  * todo proper icon
+ * todo there is still something funky going on, sometimes events are not really synced, can I use
+ *  events value to validate it?
  */
 class SensorService : Service(), SensorEventListener {
     companion object {
@@ -42,6 +45,7 @@ class SensorService : Service(), SensorEventListener {
         val shouldStop = intent?.getBooleanExtra(PARAM_STOP, false) ?: false
 
         if (shouldStop) {
+            assertEnabledSettingIsFalse()
             stopForegroundService()
         } else if(mSensorManager == null) {
             setupHandlers()
@@ -58,12 +62,22 @@ class SensorService : Service(), SensorEventListener {
         mSensorManager!!.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
+    private fun assertEnabledSettingIsFalse() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val isEnabled = sharedPreferences.getBoolean(Settings.ENABLED, false)
+
+        if (isEnabled) {
+            val edition = sharedPreferences.edit()
+            edition.putBoolean(Settings.ENABLED, false)
+            edition.apply()
+        }
+    }
+
     private fun stopForegroundService() {
         stopForeground(true)
         stopSelf()
     }
 
-    //todo now I need that the stop intent first turn the persisted enabled flag to off and then stop
     private fun startForegroundService() {
         val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
         val pendingIntentToOpenMainActivity =
