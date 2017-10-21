@@ -45,8 +45,8 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
             PreferenceFragment::class.java.name == fragmentName || GeneralPreferenceFragment::class.java.name == fragmentName
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
-        if (key == "enabled") {//todo extract settings name
-            val runningDialog = sharedPreferences.getBoolean("enabled", true)
+        if (key == Settings.ENABLED) {
+            val runningDialog = sharedPreferences.getBoolean(Settings.ENABLED, true)
             if (runningDialog) {
                 startService()
             } else {
@@ -57,7 +57,7 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
 
     private fun isEnabled(): Boolean {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        return sharedPreferences.getBoolean("enabled", false)
+        return sharedPreferences.getBoolean(Settings.ENABLED, false)
     }
 
     class GeneralPreferenceFragment : PreferenceFragment() {

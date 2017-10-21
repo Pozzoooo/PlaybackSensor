@@ -15,12 +15,18 @@ import pozzo.apps.tools.Log
 /**
  * @author galien
  * @since 08/10/17.
+ *
+ * todo integrate splunk mint
+ * todo integrate firebase
+ * todo proper icon
  */
 class SensorService : Service(), SensorEventListener {
     companion object {
+        private const val PARAM_STOP = "stop"
+
         fun getStopIntent(context: Context): Intent {
             val intent = Intent(context, SensorService::class.java)
-            intent.putExtra("stop", true)
+            intent.putExtra(PARAM_STOP, true)
             return intent
         }
     }
@@ -33,7 +39,7 @@ class SensorService : Service(), SensorEventListener {
     override fun onBind(intent: Intent?): IBinder = null!!
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val shouldStop = intent?.getBooleanExtra("stop", false) ?: false
+        val shouldStop = intent?.getBooleanExtra(PARAM_STOP, false) ?: false
 
         if (shouldStop) {
             stopForegroundService()
@@ -57,7 +63,7 @@ class SensorService : Service(), SensorEventListener {
         stopSelf()
     }
 
-    //todo now I need that the stop intent first turn the persisted enbabled flag to off and then stop
+    //todo now I need that the stop intent first turn the persisted enabled flag to off and then stop
     private fun startForegroundService() {
         val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
         val pendingIntentToOpenMainActivity =
@@ -66,15 +72,15 @@ class SensorService : Service(), SensorEventListener {
         val intentStopSensor = getStopIntent(this)
         val pendingIntentStopSensor = PendingIntent.getService(this, 0, intentStopSensor, 0)
         val action = Notification.Action
-                .Builder(R.mipmap.ic_launcher_round, "Stop", pendingIntentStopSensor)
+                .Builder(R.mipmap.ic_launcher_round, getString(R.string.stop), pendingIntentStopSensor)
                 .build()
 
         val notification = Notification.Builder(this)
-                .setContentTitle("Title")
-                .setContentText("Not not not notification")
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.notification_foreground_text))
+                .setTicker(getString(R.string.notification_foreground_text))
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentIntent(pendingIntentToOpenMainActivity)
-                .setTicker("Ticker")
                 .setPriority(Notification.PRIORITY_LOW)
                 .addAction(action)
                 .build()

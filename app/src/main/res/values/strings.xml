@@ -2,5 +2,8 @@
     <string name="app_name">Playback Sensor</string>
 
 	<string name="enabled">Enabled</string>
-	<string name="enabled_explanation">Sensor and notification actives</string>
+	<string name="stop">Stop</string>
+
+	<string name="enabled_setting_explanation">Sensor and notification</string>
+	<string name="notification_foreground_text">Listening events</string>
 </resources>

@@ -3,7 +3,7 @@
     <SwitchPreference
         android:defaultValue="true"
         android:key="enabled"
-        android:summary="@string/enabled_explanation"
+        android:summary="@string/enabled_setting_explanation"
         android:title="@string/enabled" />
 
 </PreferenceScreen>
