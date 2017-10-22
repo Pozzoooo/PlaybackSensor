@@ -9,10 +9,13 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crash.FirebaseCrash
 import pozzo.apps.tools.Log
+
 
 /**
  * @author galien
@@ -37,6 +40,7 @@ class SensorService : Service(), SensorEventListener {
     private lateinit var mProximity: Sensor
     private lateinit var eventHandler: EventHandler
     private lateinit var ignoreRequestHanlder: IgnoreRequestHandler
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
@@ -53,6 +57,7 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private fun startService() {
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
         setupHandlers()
         registerSensor()
         startForegroundServiceNotification()
@@ -143,8 +148,20 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private fun logSensorEvent(event: SensorEvent) {
+        val bundle = Bundle()
+        bundle.putString("size", event.values.size.toString())
+        var values = ""
+        for (i in 0..event.values.size) {
+            bundle.putString("value " + i.toString(), event.values[i].toString())
+            values += i.toString() + ","
+        }
+
+        bundle.putString("accuracy", event.accuracy.toString())
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "event")
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
+
         Log.d("size: ${event.values.size} " +
-                "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
+                "distance: $values " +
                 "accuracy: ${event.accuracy} " +
                 "storedValue ${eventHandler.storedValue} " +
                 "countIgnoreRequest ${ignoreRequestHanlder.countIgnoreRequest}")
