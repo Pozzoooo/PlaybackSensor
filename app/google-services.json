@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "585899424913",
+    "firebase_url": "https://playback-sensor.firebaseio.com",
+    "project_id": "playback-sensor",
+    "storage_bucket": "playback-sensor.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:585899424913:android:0e79fa9c6cf21260",
+        "android_client_info": {
+          "package_name": "pozzo.apps.playbacksensor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "585899424913-skc1d40cjo5i7d51nd0t5c1hckphrprf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pozzo.apps.playbacksensor",
+            "certificate_hash": "a9dcbcb10887f1e5b8c23353efc3c982bf641cef"
+          }
+        },
+        {
+          "client_id": "585899424913-nmvusnl9dlt17il5du8bqduh96gq5u87.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArAAJnb9a-i1yeuexZNmCS6MA9gMTzEQ4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "585899424913-nmvusnl9dlt17il5du8bqduh96gq5u87.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

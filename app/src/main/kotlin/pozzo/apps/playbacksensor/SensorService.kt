@@ -11,14 +11,13 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.IBinder
 import android.preference.PreferenceManager
+import com.google.firebase.crash.FirebaseCrash
 import pozzo.apps.tools.Log
 
 /**
  * @author galien
  * @since 08/10/17.
  *
- * todo integrate splunk mint
- * todo integrate firebase
  * todo proper icon
  * todo there is still something funky going on, sometimes events are not really synced, can I use
  *  events value to validate it?
@@ -125,17 +124,22 @@ class SensorService : Service(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
-        eventHandler.lastValue = event.values[0]
-        logSensorEvent(event)
+        try {
+            //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
+            eventHandler.lastValue = event.values[0]
+            logSensorEvent(event)
 
-        if (!ignoreRequestHanlder.shouldProcessEvent()) {
-            return
+            if (!ignoreRequestHanlder.shouldProcessEvent()) {
+                return
+            }
+
+            //todo what about keep holding for some more time and lock/unlock screen?
+            eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
+            eventHandler.storedValue = event.values[0]
+        } catch (e: Throwable) {
+            FirebaseCrash.report(e)
+            stopService()
         }
-
-        //todo what about keep holding for some more time and lock/unlock screen?
-        eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
-        eventHandler.storedValue = event.values[0]
     }
 
     private fun logSensorEvent(event: SensorEvent) {
