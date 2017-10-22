@@ -45,16 +45,26 @@ class SensorService : Service(), SensorEventListener {
         val shouldStop = intent?.getBooleanExtra(PARAM_STOP, false) ?: false
 
         if (shouldStop) {
-            assertEnabledSettingIsFalse()
-            stopForegroundService()
-        } else if(mSensorManager == null) {
-            setupHandlers()
-            registerSensor()
-            startForegroundService()
+            stopService()
+        } else if(!isServiceRunning()) {
+            startService()
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
+
+    private fun startService() {
+        setupHandlers()
+        registerSensor()
+        startForegroundServiceNotification()
+    }
+
+    private fun stopService() {
+        assertEnabledSettingIsFalse()
+        stopForegroundService()
+    }
+
+    private fun isServiceRunning(): Boolean = mSensorManager == null
 
     private fun registerSensor() {
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -78,28 +88,31 @@ class SensorService : Service(), SensorEventListener {
         stopSelf()
     }
 
-    private fun startForegroundService() {
-        val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
-        val pendingIntentToOpenMainActivity =
-                PendingIntent.getActivity(this, 0, intentSettingsActivity, 0)
-
-        val intentStopSensor = getStopIntent(this)
-        val pendingIntentStopSensor = PendingIntent.getService(this, 0, intentStopSensor, 0)
-        val action = Notification.Action
-                .Builder(R.mipmap.ic_launcher_round, getString(R.string.stop), pendingIntentStopSensor)
-                .build()
-
+    private fun startForegroundServiceNotification() {
         val notification = Notification.Builder(this)
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.notification_foreground_text))
                 .setTicker(getString(R.string.notification_foreground_text))
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentIntent(pendingIntentToOpenMainActivity)
+                .setContentIntent(getPendingIntentToOpenMainActivity())
                 .setPriority(Notification.PRIORITY_LOW)
-                .addAction(action)
+                .addAction(getStopAction())
                 .build()
 
         startForeground(0x22, notification)
+    }
+
+    private fun getPendingIntentToOpenMainActivity(): PendingIntent {
+        val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
+        return PendingIntent.getActivity(this, 0, intentSettingsActivity, 0)
+    }
+
+    private fun getStopAction(): Notification.Action {
+        val intentStopSensor = getStopIntent(this)
+        val pendingIntentStopSensor = PendingIntent.getService(this, 0, intentStopSensor, 0)
+        return Notification.Action
+                .Builder(R.mipmap.ic_launcher_round, getString(R.string.stop), pendingIntentStopSensor)
+                .build()
     }
 
     private fun setupHandlers() {
@@ -114,11 +127,7 @@ class SensorService : Service(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
         eventHandler.lastValue = event.values[0]
-        Log.d("size: ${event.values.size} " +
-                "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
-                "accuracy: ${event.accuracy} " +
-                "storedValue ${eventHandler.storedValue} " +
-                "countIgnoreRequest ${ignoreRequestHanlder.countIgnoreRequest}")
+        logSensorEvent(event)
 
         if (!ignoreRequestHanlder.shouldProcessEvent()) {
             return
@@ -127,6 +136,14 @@ class SensorService : Service(), SensorEventListener {
         //todo what about keep holding for some more time and lock/unlock screen?
         eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
         eventHandler.storedValue = event.values[0]
+    }
+
+    private fun logSensorEvent(event: SensorEvent) {
+        Log.d("size: ${event.values.size} " +
+                "distance: ${event.values[0]} ${event.values[1]} ${event.values[2]} " +
+                "accuracy: ${event.accuracy} " +
+                "storedValue ${eventHandler.storedValue} " +
+                "countIgnoreRequest ${ignoreRequestHanlder.countIgnoreRequest}")
     }
 
     override fun onDestroy() {
