@@ -45,7 +45,7 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
             PreferenceFragment::class.java.name == fragmentName || GeneralPreferenceFragment::class.java.name == fragmentName
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
-        if (key == Settings.ENABLED) {
+        if (Settings.ENABLED.equals(key)) {
             val runningDialog = sharedPreferences.getBoolean(Settings.ENABLED, true)
             if (runningDialog) {
                 startService()

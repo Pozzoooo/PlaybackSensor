@@ -57,10 +57,14 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private fun startService() {
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        setupFirebase()
         setupHandlers()
         registerSensor()
         startForegroundServiceNotification()
+    }
+
+    private fun setupFirebase() {
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
     }
 
     private fun stopService() {
@@ -68,7 +72,7 @@ class SensorService : Service(), SensorEventListener {
         stopForegroundService()
     }
 
-    private fun isServiceRunning(): Boolean = mSensorManager == null
+    private fun isServiceRunning(): Boolean = mSensorManager != null
 
     private fun registerSensor() {
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -151,9 +155,9 @@ class SensorService : Service(), SensorEventListener {
         val bundle = Bundle()
         bundle.putString("size", event.values.size.toString())
         var values = ""
-        for (i in 0..event.values.size) {
-            bundle.putString("value " + i.toString(), event.values[i].toString())
-            values += i.toString() + ","
+        for ((i, value) in event.values.withIndex()) {
+            bundle.putString("value $i", value.toString())
+            values += "$i,"
         }
 
         bundle.putString("accuracy", event.accuracy.toString())

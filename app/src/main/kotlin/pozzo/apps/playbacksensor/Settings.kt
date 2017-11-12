@@ -5,5 +5,5 @@ package pozzo.apps.playbacksensor
  * @since 21/10/17.
  */
 object Settings {
-    const val ENABLED = "enbaled"
+    const val ENABLED = "enabled"
 }
