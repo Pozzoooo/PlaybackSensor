@@ -21,22 +21,29 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupLogs()
+        initialiseBaseServiceStateBasedOnSettings()
+        registerItlsefForPreferenceChanges()
+        setupLayout()
+    }
+
+    private fun setupLogs() {
         Log.SHOW_LOGS = BuildConfig.DEBUG
+    }
+
+    private fun initialiseBaseServiceStateBasedOnSettings() {
         if (isEnabled()) {
             startService()
         }
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this)
+    }
 
+    private fun registerItlsefForPreferenceChanges() {
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this)
+    }
+
+    private fun setupLayout() {
         fragmentManager.beginTransaction().replace(android.R.id.content,
                 GeneralPreferenceFragment()).commit()
-    }
-
-    private fun startService() {
-        startService(Intent(this, SensorService::class.java))
-    }
-
-    private fun stopService() {
-        startService(SensorService.getStopIntent(this))
     }
 
     override fun onIsMultiPane(): Boolean = isXLargeTablet(this)
@@ -45,14 +52,23 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
             PreferenceFragment::class.java.name == fragmentName || GeneralPreferenceFragment::class.java.name == fragmentName
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
-        if (Settings.ENABLED.equals(key)) {
-            val runningDialog = sharedPreferences.getBoolean(Settings.ENABLED, true)
-            if (runningDialog) {
-                startService()
-            } else {
-                stopService()
-            }
+        if (Settings.ENABLED != key) {
+            return
         }
+
+        if (isEnabled()) {
+            startService()
+        } else {
+            stopService()
+        }
+    }
+
+    private fun startService() {
+        startService(Intent(this, SensorService::class.java))
+    }
+
+    private fun stopService() {
+        startService(SensorService.getStopIntent(this))
     }
 
     private fun isEnabled(): Boolean {

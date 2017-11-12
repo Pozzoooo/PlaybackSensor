@@ -28,6 +28,8 @@ import pozzo.apps.tools.Log
 class SensorService : Service(), SensorEventListener {
     companion object {
         private const val PARAM_STOP = "stop"
+        private const val LONG_EVENT_DELAY = 500L
+        private const val EVENT_INDEX = 0
 
         fun getStopIntent(context: Context): Intent {
             val intent = Intent(context, SensorService::class.java)
@@ -45,9 +47,7 @@ class SensorService : Service(), SensorEventListener {
     override fun onBind(intent: Intent?): IBinder = null!!
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val shouldStop = intent?.getBooleanExtra(PARAM_STOP, false) ?: false
-
-        if (shouldStop) {
+        if (isStopSignal(intent)) {
             stopService()
         } else if(!isServiceRunning()) {
             startService()
@@ -55,6 +55,8 @@ class SensorService : Service(), SensorEventListener {
 
         return super.onStartCommand(intent, flags, startId)
     }
+
+    private fun isStopSignal(intent: Intent?): Boolean = intent?.getBooleanExtra(PARAM_STOP, false) ?: false
 
     private fun startService() {
         setupFirebase()
@@ -68,7 +70,7 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private fun stopService() {
-        assertEnabledSettingIsFalse()
+        ensureEnabledSettingIsFalse()
         stopForegroundService()
     }
 
@@ -80,7 +82,7 @@ class SensorService : Service(), SensorEventListener {
         mSensorManager!!.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
-    private fun assertEnabledSettingIsFalse() {
+    private fun ensureEnabledSettingIsFalse() {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val isEnabled = sharedPreferences.getBoolean(Settings.ENABLED, false)
 
@@ -135,7 +137,7 @@ class SensorService : Service(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         try {
             //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
-            eventHandler.lastValue = event.values[0]
+            eventHandler.lastValue = event.values[EVENT_INDEX]
             logSensorEvent(event)
 
             if (!ignoreRequestHanlder.shouldProcessEvent()) {
@@ -143,10 +145,11 @@ class SensorService : Service(), SensorEventListener {
             }
 
             //todo what about keep holding for some more time and lock/unlock screen?
-            eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), 500)
-            eventHandler.storedValue = event.values[0]
+            eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), LONG_EVENT_DELAY)
+            eventHandler.storedValue = event.values[EVENT_INDEX]
         } catch (e: Throwable) {
             FirebaseCrash.report(e)
+            e.printStackTrace()
             stopService()
         }
     }
