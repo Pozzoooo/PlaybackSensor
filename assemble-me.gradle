@@ -1,5 +1,10 @@
 def getCurrentVariantTask() {
-  def xml = new XmlParser().parse(project.file("${project.name}.iml"))
+  def imlFile = project.file("${project.name}.iml")
+  if (!imlFile.exists()) {
+    return;
+  }
+
+  def xml = new XmlParser().parse(imlFile)
   def selectedBuildVariant = xml.depthFirst().find { node ->
     node.hasProperty("name") && node.@name == 'SELECTED_BUILD_VARIANT'
   }?.@value
