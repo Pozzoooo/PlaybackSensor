@@ -21,7 +21,6 @@ import pozzo.apps.tools.Log
  * @author galien
  * @since 08/10/17.
  *
- * todo proper icon
  * todo there is still something funky going on, sometimes events are not really synced, can I use
  *  events value to validate it?
  */
@@ -103,7 +102,7 @@ class SensorService : Service(), SensorEventListener {
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.notification_foreground_text))
                 .setTicker(getString(R.string.notification_foreground_text))
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.drawable.ic_icon)
                 .setContentIntent(getPendingIntentToOpenMainActivity())
                 .setPriority(Notification.PRIORITY_LOW)
                 .addAction(getStopAction())
@@ -121,7 +120,7 @@ class SensorService : Service(), SensorEventListener {
         val intentStopSensor = getStopIntent(this)
         val pendingIntentStopSensor = PendingIntent.getService(this, 0, intentStopSensor, 0)
         return Notification.Action
-                .Builder(R.mipmap.ic_launcher_round, getString(R.string.stop), pendingIntentStopSensor)
+                .Builder(R.drawable.ic_icon, getString(R.string.stop), pendingIntentStopSensor)
                 .build()
     }
 
