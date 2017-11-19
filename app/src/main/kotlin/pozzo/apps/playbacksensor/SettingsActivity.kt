@@ -13,6 +13,7 @@ import pozzo.apps.tools.Log
 /**
  * todo need to create an image to explain how to use it :(
  *      I can maybe even add to the main screen, as I don't know what else I can add
+ * todo it does not update the preferecens when I stop by the notification
  *
  * @author galien
  * @since 15/10/17.
