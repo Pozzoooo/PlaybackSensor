@@ -11,6 +11,9 @@ import android.preference.PreferenceManager
 import pozzo.apps.tools.Log
 
 /**
+ * todo pause button in the notification
+ * todo option to enable it only when the screen is off
+ *
  * @author Luiz Gustavo Pozzo
  * @since 15/10/17.
  */
