@@ -1,7 +1,7 @@
 package pozzo.apps.playbacksensor
 
 /**
- * @author galien
+ * @author Luiz Gustavo Pozzo
  * @since 21/10/17.
  */
 object Settings {

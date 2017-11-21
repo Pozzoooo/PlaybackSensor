@@ -18,7 +18,7 @@ import pozzo.apps.tools.Log
 
 
 /**
- * @author galien
+ * @author Luiz Gustavo Pozzo
  * @since 08/10/17.
  *
  * todo there is still something funky going on, sometimes events are not really synced, can I use

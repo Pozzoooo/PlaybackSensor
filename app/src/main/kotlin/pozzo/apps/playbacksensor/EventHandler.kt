@@ -8,7 +8,7 @@ import android.view.KeyEvent
 import pozzo.apps.tools.Log
 
 /**
- * @author galien
+ * @author Luiz Gustavo Pozzo
  * @since 15/10/17.
  */
 class EventHandler(private val context: Context): Handler(context.mainLooper) {

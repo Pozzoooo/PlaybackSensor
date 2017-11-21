@@ -6,7 +6,7 @@ import android.os.Message
 import pozzo.apps.tools.Log
 
 /**
- * @author galien
+ * @author Luiz Gustavo Pozzo
  * @since 16/10/17.
  */
 class IgnoreRequestHandler(context: Context): Handler(context.mainLooper) {
