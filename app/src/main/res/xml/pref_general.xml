@@ -6,4 +6,16 @@
         android:summary="@string/enabled_setting_explanation"
         android:title="@string/enabled" />
 
+	<Preference />
+
+	<Preference
+		android:title="@string/tutorial" />
+	<Preference
+		android:title="@string/tutorial_play_pause_title"
+		android:summary="@string/tutorial_play_pause" />
+	<Preference
+		android:title="@string/tutorial_next_title"
+		android:summary="@string/tutorial_next"/>
+	<Preference
+		android:summary="@string/tutorial_distance" />
 </PreferenceScreen>

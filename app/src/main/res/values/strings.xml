@@ -6,4 +6,11 @@
 
 	<string name="enabled_setting_explanation">Sensor and notification</string>
 	<string name="notification_foreground_text">Listening events</string>
+
+	<string name="tutorial">Tutorial</string>
+	<string name="tutorial_next_title">Next</string>
+	<string name="tutorial_next">Rapidly wave over the proximity sensors and the music should switch to the next song</string>
+	<string name="tutorial_play_pause">Hold your hand over the proximity sensor (usually close to the front facing camera) for a few seconds and the music should start/pause</string>
+	<string name="tutorial_play_pause_title">Play/Pause</string>
+	<string name="tutorial_distance">Distance may vary from device to device, so test whats works best to you</string>
 </resources>

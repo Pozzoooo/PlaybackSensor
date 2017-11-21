@@ -11,9 +11,6 @@ import android.preference.PreferenceManager
 import pozzo.apps.tools.Log
 
 /**
- * todo need to create an image to explain how to use it :(
- *      I can maybe even add to the main screen, as I don't know what else I can add
- *
  * @author galien
  * @since 15/10/17.
  */
