@@ -1,14 +1,14 @@
 package pozzo.apps.playbacksensor
 
-import android.app.Notification
-import android.app.PendingIntent
-import android.app.Service
+import android.annotation.TargetApi
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
@@ -98,7 +98,13 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private fun startForegroundServiceNotification() {
-        val notification = Notification.Builder(this)
+        val builder = Notification.Builder(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            addNotificationChannel(builder)
+        }
+
+        val notification = builder
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(getString(R.string.notification_foreground_text))
                 .setTicker(getString(R.string.notification_foreground_text))
@@ -109,6 +115,15 @@ class SensorService : Service(), SensorEventListener {
                 .build()
 
         startForeground(0x22, notification)
+    }
+
+    @TargetApi(Build.VERSION_CODES.O)
+    private fun addNotificationChannel(builder: Notification.Builder) {
+        val channel =  NotificationChannel("0", "keepAlive", NotificationManager.IMPORTANCE_HIGH)
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+        builder.setChannelId("0")
     }
 
     private fun getPendingIntentToOpenMainActivity(): PendingIntent {

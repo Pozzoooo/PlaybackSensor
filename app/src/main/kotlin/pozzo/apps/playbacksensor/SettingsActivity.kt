@@ -13,6 +13,8 @@ import pozzo.apps.tools.Log
 /**
  * todo pause button in the notification
  * todo option to enable it only when the screen is off
+ * todo also control it by other sensors (like punching the phone)
+ * todo why is it not working on Google Play music in Oreo?
  *
  * @author Luiz Gustavo Pozzo
  * @since 15/10/17.
