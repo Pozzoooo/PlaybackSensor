@@ -13,8 +13,8 @@ import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
 import android.widget.Toast
+import com.crashlytics.android.Crashlytics
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.crash.FirebaseCrash
 import pozzo.apps.tools.Log
 
 
@@ -167,7 +167,7 @@ class SensorService : Service(), SensorEventListener {
             eventHandler.sendMessageDelayed(eventHandler.obtainMessage(), LONG_EVENT_DELAY)
             eventHandler.storedValue = event.values[EVENT_INDEX]
         } catch (e: Throwable) {
-            FirebaseCrash.report(e)
+            Crashlytics.logException(e)
             e.printStackTrace()
             stopService()
         }
