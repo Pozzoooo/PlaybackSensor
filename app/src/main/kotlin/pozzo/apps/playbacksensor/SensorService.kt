@@ -17,11 +17,7 @@ import com.crashlytics.android.Crashlytics
 import com.google.firebase.analytics.FirebaseAnalytics
 import pozzo.apps.tools.Log
 
-
 /**
- * @author Luiz Gustavo Pozzo
- * @since 08/10/17.
- *
  * todo there is still something funky going on, sometimes events are not really synced, can I use
  *  events value to validate it?
  */

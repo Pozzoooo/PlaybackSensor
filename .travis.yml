@@ -2,9 +2,9 @@ language: android
 android:
   components:
     - tools
-    - build-tools-26.0.2
-    - android-27
+    - build-tools-27.0.3
+    - android-28
     - extra-android-m2repository
 
-  script:
-    - ./gradlew app:clean app:test --continue --no-daemon
+script:
+  - ./gradlew app:clean app:testDebug --continue --no-daemon
