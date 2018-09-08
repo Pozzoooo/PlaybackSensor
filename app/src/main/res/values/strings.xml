@@ -13,4 +13,6 @@
 	<string name="tutorial_play_pause">Hold your hand over the proximity sensor (usually close to the front facing camera) for a few seconds and the music should start/pause</string>
 	<string name="tutorial_play_pause_title">Play/Pause</string>
 	<string name="tutorial_distance">Distance may vary from device to device, so test whats works best to you</string>
+
+	<string name="error_cant_start_sensor">Can\'t start sensors</string>
 </resources>

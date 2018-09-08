@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
+import android.widget.Toast
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crash.FirebaseCrash
 import pozzo.apps.tools.Log
@@ -38,7 +39,6 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private var mSensorManager: SensorManager? = null
-    private lateinit var mProximity: Sensor
     private lateinit var eventHandler: EventHandler
     private lateinit var ignoreRequestHanlder: IgnoreRequestHandler
     private lateinit var firebaseAnalytics: FirebaseAnalytics
@@ -76,9 +76,14 @@ class SensorService : Service(), SensorEventListener {
     private fun isServiceRunning(): Boolean = mSensorManager != null
 
     private fun registerSensor() {
-        mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        mProximity = mSensorManager!!.getDefaultSensor(Sensor.TYPE_PROXIMITY)
-        mSensorManager!!.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL)
+        mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager?
+        mSensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY)?.let {
+            mSensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        } ?: warnError()
+    }
+
+    private fun warnError() {
+        Toast.makeText(this, R.string.error_cant_start_sensor, Toast.LENGTH_LONG).show()
     }
 
     private fun ensureEnabledSettingIsFalse() {
