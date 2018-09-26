@@ -1,4 +1,4 @@
-package pozzo.apps.playbacksensor
+package pozzo.apps.playbacksensor.settings
 
 object Settings {
     const val ENABLED = "enabled"

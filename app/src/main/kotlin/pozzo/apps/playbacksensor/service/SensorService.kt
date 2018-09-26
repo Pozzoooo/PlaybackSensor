@@ -16,34 +16,36 @@ import android.widget.Toast
 import com.crashlytics.android.Crashlytics
 import com.google.firebase.analytics.FirebaseAnalytics
 import pozzo.apps.playbacksensor.*
+import pozzo.apps.playbacksensor.settings.Settings
+import pozzo.apps.playbacksensor.settings.SettingsActivity
 import pozzo.apps.tools.Log
 
 /**
  * todo there is still something funky going on, sometimes events are not really synced, can I use
  *  events value to validate it?
+ * todo messy class, need a lot of refactoring
  */
 class SensorService : Service(), SensorEventListener {
     companion object {
-        private const val PARAM_STOP = "stop"
         private const val LONG_EVENT_DELAY = 500L
         private const val EVENT_INDEX = 0
-
-        fun getStopIntent(context: Context): Intent {
-            val intent = Intent(context, SensorService::class.java)
-            intent.putExtra(PARAM_STOP, true)
-            return intent
-        }
     }
 
     private var mSensorManager: SensorManager? = null
     private lateinit var eventHandler: EventHandler
-    private lateinit var ignoreRequestHanlder: IgnoreRequestHandler
+    private lateinit var ignoreRequestHandler: IgnoreRequestHandler
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+    private lateinit var serviceBusiness: ServiceBusiness
+
+    override fun onCreate() {
+        super.onCreate()
+        serviceBusiness = ServiceBusiness(this)
+    }
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (isStopSignal(intent)) {
+        if (serviceBusiness.isStopSignal(intent)) {
             stopService()
         } else if(!isServiceRunning()) {
             startService()
@@ -51,8 +53,6 @@ class SensorService : Service(), SensorEventListener {
 
         return super.onStartCommand(intent, flags, startId)
     }
-
-    private fun isStopSignal(intent: Intent?): Boolean = intent?.getBooleanExtra(PARAM_STOP, false) ?: false
 
     private fun startService() {
         setupFirebase()
@@ -65,12 +65,10 @@ class SensorService : Service(), SensorEventListener {
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
     }
 
-    private fun stopService() {
-        ensureEnabledSettingIsFalse()
-        stopForegroundService()
+    private fun setupHandlers() {
+        eventHandler = EventHandler(this)
+        ignoreRequestHandler = IgnoreRequestHandler(this)
     }
-
-    private fun isServiceRunning(): Boolean = mSensorManager != null
 
     private fun registerSensor() {
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager?
@@ -79,8 +77,35 @@ class SensorService : Service(), SensorEventListener {
         } ?: warnError()
     }
 
+    private fun startForegroundServiceNotification() {
+        val builder = Notification.Builder(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            addNotificationChannel(builder)
+        }
+
+        val notification = builder
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.notification_foreground_text))
+                .setTicker(getString(R.string.notification_foreground_text))
+                .setSmallIcon(R.drawable.ic_icon)
+                .setContentIntent(getPendingIntentToOpenMainActivity())
+                .setPriority(Notification.PRIORITY_LOW)
+                .addAction(serviceBusiness.getStopAction())
+                .build()
+
+        startForeground(0x22, notification)
+    }
+
+    private fun isServiceRunning(): Boolean = mSensorManager != null
+
     private fun warnError() {
         Toast.makeText(this, R.string.error_cant_start_sensor, Toast.LENGTH_LONG).show()
+    }
+
+    private fun stopService() {
+        ensureEnabledSettingIsFalse()
+        stopForegroundService()
     }
 
     private fun ensureEnabledSettingIsFalse() {
@@ -99,26 +124,6 @@ class SensorService : Service(), SensorEventListener {
         stopSelf()
     }
 
-    private fun startForegroundServiceNotification() {
-        val builder = Notification.Builder(this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            addNotificationChannel(builder)
-        }
-
-        val notification = builder
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(getString(R.string.notification_foreground_text))
-                .setTicker(getString(R.string.notification_foreground_text))
-                .setSmallIcon(R.drawable.ic_icon)
-                .setContentIntent(getPendingIntentToOpenMainActivity())
-                .setPriority(Notification.PRIORITY_LOW)
-                .addAction(getStopAction())
-                .build()
-
-        startForeground(0x22, notification)
-    }
-
     @TargetApi(Build.VERSION_CODES.O)
     private fun addNotificationChannel(builder: Notification.Builder) {
         val channel =  NotificationChannel("0", "keepAlive", NotificationManager.IMPORTANCE_HIGH)
@@ -133,19 +138,6 @@ class SensorService : Service(), SensorEventListener {
         return PendingIntent.getActivity(this, 0, intentSettingsActivity, 0)
     }
 
-    private fun getStopAction(): Notification.Action {
-        val intentStopSensor = getStopIntent(this)
-        val pendingIntentStopSensor = PendingIntent.getService(this, 0, intentStopSensor, 0)
-        return Notification.Action
-                .Builder(R.drawable.ic_icon, getString(R.string.stop), pendingIntentStopSensor)
-                .build()
-    }
-
-    private fun setupHandlers() {
-        eventHandler = EventHandler(this)
-        ignoreRequestHanlder = IgnoreRequestHandler(this)
-    }
-
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
         Log.d("accuracy change: $accuracy")
     }
@@ -156,7 +148,7 @@ class SensorService : Service(), SensorEventListener {
             eventHandler.lastValue = event.values[EVENT_INDEX]
             logSensorEvent(event)
 
-            if (!ignoreRequestHanlder.shouldProcessEvent()) {
+            if (!ignoreRequestHandler.shouldProcessEvent()) {
                 return
             }
 
@@ -187,7 +179,7 @@ class SensorService : Service(), SensorEventListener {
                 "distance: $values " +
                 "accuracy: ${event.accuracy} " +
                 "storedValue ${eventHandler.storedValue} " +
-                "countIgnoreRequest ${ignoreRequestHanlder.countIgnoreRequest}")
+                "countIgnoreRequest ${ignoreRequestHandler.countIgnoreRequest}")
     }
 
     override fun onDestroy() {

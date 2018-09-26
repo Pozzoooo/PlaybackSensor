@@ -1,4 +1,4 @@
-package pozzo.apps.playbacksensor
+package pozzo.apps.playbacksensor.settings
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
+import pozzo.apps.playbacksensor.BuildConfig
+import pozzo.apps.playbacksensor.R
 import pozzo.apps.playbacksensor.service.ServiceBusiness
 import pozzo.apps.tools.Log
 
