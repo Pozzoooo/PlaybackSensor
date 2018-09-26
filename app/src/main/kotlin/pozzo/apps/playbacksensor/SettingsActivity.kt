@@ -1,25 +1,30 @@
 package pozzo.apps.playbacksensor
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
 import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
+import pozzo.apps.playbacksensor.service.ServiceBusiness
 import pozzo.apps.tools.Log
 
 /**
+ * todo add app compat
  * todo pause button in the notification
  * todo option to enable it only when the screen is off
  * todo also control it by other sensors (like punching the phone)
  * todo why is it not working on Google Play music in Oreo?
  */
 class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
+    private lateinit var serviceBusiness: ServiceBusiness
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        this.serviceBusiness = ServiceBusiness(this)
+
         setupLogs()
         initialiseBaseServiceStateBasedOnSettings()
         registerItlsefForPreferenceChanges()
@@ -36,9 +41,7 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
     }
 
     private fun initialiseBaseServiceStateBasedOnSettings() {
-        if (isEnabled()) {
-            startService()
-        }
+        serviceBusiness.serviceStateChanged()
     }
 
     private fun registerItlsefForPreferenceChanges() {
@@ -60,24 +63,7 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
             return
         }
 
-        if (isEnabled()) {
-            startService()
-        } else {
-            stopService()
-        }
-    }
-
-    private fun startService() {
-        startService(Intent(this, SensorService::class.java))
-    }
-
-    private fun stopService() {
-        startService(SensorService.getStopIntent(this))
-    }
-
-    private fun isEnabled(): Boolean {
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        return sharedPreferences.getBoolean(Settings.ENABLED, false)
+        serviceBusiness.serviceStateChanged()
     }
 
     class GeneralPreferenceFragment : PreferenceFragment() {

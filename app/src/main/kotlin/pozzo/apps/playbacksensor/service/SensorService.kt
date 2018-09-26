@@ -1,4 +1,4 @@
-package pozzo.apps.playbacksensor
+package pozzo.apps.playbacksensor.service
 
 import android.annotation.TargetApi
 import android.app.*
@@ -15,6 +15,7 @@ import android.preference.PreferenceManager
 import android.widget.Toast
 import com.crashlytics.android.Crashlytics
 import com.google.firebase.analytics.FirebaseAnalytics
+import pozzo.apps.playbacksensor.*
 import pozzo.apps.tools.Log
 
 /**
