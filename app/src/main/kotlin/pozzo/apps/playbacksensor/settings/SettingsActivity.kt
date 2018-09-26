@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
 import android.preference.PreferenceManager
+import org.koin.android.ext.android.inject
 import pozzo.apps.playbacksensor.BuildConfig
 import pozzo.apps.playbacksensor.R
 import pozzo.apps.playbacksensor.service.ServiceBusiness
@@ -20,12 +21,10 @@ import pozzo.apps.tools.Log
  * todo why is it not working on Google Play music in Oreo?
  */
 class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPreferenceChangeListener {
-    private lateinit var serviceBusiness: ServiceBusiness
+    private val serviceBusiness: ServiceBusiness by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        this.serviceBusiness = ServiceBusiness(this)
 
         setupLogs()
         initialiseBaseServiceStateBasedOnSettings()

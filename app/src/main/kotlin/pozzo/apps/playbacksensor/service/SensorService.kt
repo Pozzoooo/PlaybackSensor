@@ -15,6 +15,7 @@ import android.preference.PreferenceManager
 import android.widget.Toast
 import com.crashlytics.android.Crashlytics
 import com.google.firebase.analytics.FirebaseAnalytics
+import org.koin.android.ext.android.inject
 import pozzo.apps.playbacksensor.*
 import pozzo.apps.playbacksensor.settings.Settings
 import pozzo.apps.playbacksensor.settings.SettingsActivity
@@ -35,12 +36,7 @@ class SensorService : Service(), SensorEventListener {
     private lateinit var eventHandler: EventHandler
     private lateinit var ignoreRequestHandler: IgnoreRequestHandler
     private lateinit var firebaseAnalytics: FirebaseAnalytics
-    private lateinit var serviceBusiness: ServiceBusiness
-
-    override fun onCreate() {
-        super.onCreate()
-        serviceBusiness = ServiceBusiness(this)
-    }
+    private val serviceBusiness: ServiceBusiness by inject()
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
