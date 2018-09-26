@@ -5,10 +5,6 @@ import android.os.Handler
 import android.os.Message
 import pozzo.apps.tools.Log
 
-/**
- * @author Luiz Gustavo Pozzo
- * @since 16/10/17.
- */
 class IgnoreRequestHandler(context: Context): Handler(context.mainLooper) {
     companion object {
         private const val MESSAGE_ID = 199
