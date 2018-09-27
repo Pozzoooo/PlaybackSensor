@@ -1,14 +1,12 @@
 package pozzo.apps.playbacksensor.service
 
-import android.annotation.TargetApi
-import android.app.*
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
@@ -19,8 +17,8 @@ import org.koin.android.ext.android.inject
 import pozzo.apps.playbacksensor.EventHandler
 import pozzo.apps.playbacksensor.IgnoreRequestHandler
 import pozzo.apps.playbacksensor.R
+import pozzo.apps.playbacksensor.notification.ForegroundNotifier
 import pozzo.apps.playbacksensor.settings.Settings
-import pozzo.apps.playbacksensor.settings.SettingsActivity
 import pozzo.apps.tools.Log
 
 /**
@@ -55,7 +53,7 @@ class SensorService : Service(), SensorEventListener {
 
     private fun startService() {
         registerSensor()
-        startForegroundServiceNotification()
+        ForegroundNotifier(this).startForegroundServiceNotification()
     }
 
     private fun registerSensor() {
@@ -63,26 +61,6 @@ class SensorService : Service(), SensorEventListener {
         mSensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY)?.let {
             mSensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
         } ?: warnError()
-    }
-
-    private fun startForegroundServiceNotification() {
-        val builder = Notification.Builder(this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            addNotificationChannel(builder)
-        }
-
-        val notification = builder
-                .setContentTitle(getString(R.string.app_name))
-                .setContentText(getString(R.string.notification_foreground_text))
-                .setTicker(getString(R.string.notification_foreground_text))
-                .setSmallIcon(R.drawable.ic_icon)
-                .setContentIntent(getPendingIntentToOpenMainActivity())
-                .setPriority(Notification.PRIORITY_LOW)
-                .addAction(serviceBusiness.getStopAction())
-                .build()
-
-        startForeground(0x22, notification)
     }
 
     private fun isServiceRunning(): Boolean = mSensorManager != null
@@ -110,20 +88,6 @@ class SensorService : Service(), SensorEventListener {
     private fun stopForegroundService() {
         stopForeground(true)
         stopSelf()
-    }
-
-    @TargetApi(Build.VERSION_CODES.O)
-    private fun addNotificationChannel(builder: Notification.Builder) {
-        val channel =  NotificationChannel("0", "keepAlive", NotificationManager.IMPORTANCE_HIGH)
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-        builder.setChannelId("0")
-    }
-
-    private fun getPendingIntentToOpenMainActivity(): PendingIntent {
-        val intentSettingsActivity = Intent(this, SettingsActivity::class.java)
-        return PendingIntent.getActivity(this, 0, intentSettingsActivity, 0)
     }
 
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
