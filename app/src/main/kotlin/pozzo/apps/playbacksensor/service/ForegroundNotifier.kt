@@ -1,4 +1,4 @@
-package pozzo.apps.playbacksensor.notification
+package pozzo.apps.playbacksensor.service
 
 import android.annotation.TargetApi
 import android.app.*
@@ -8,7 +8,6 @@ import android.os.Build
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
 import pozzo.apps.playbacksensor.R
-import pozzo.apps.playbacksensor.service.ServiceBusiness
 import pozzo.apps.playbacksensor.settings.SettingsActivity
 
 class ForegroundNotifier(private val service: Service) : KoinComponent {

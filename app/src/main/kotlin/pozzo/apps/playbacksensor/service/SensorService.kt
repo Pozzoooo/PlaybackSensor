@@ -7,24 +7,20 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
 import android.widget.Toast
 import com.crashlytics.android.Crashlytics
-import com.google.firebase.analytics.FirebaseAnalytics
 import org.koin.android.ext.android.inject
 import pozzo.apps.playbacksensor.EventHandler
 import pozzo.apps.playbacksensor.IgnoreRequestHandler
 import pozzo.apps.playbacksensor.R
-import pozzo.apps.playbacksensor.notification.ForegroundNotifier
 import pozzo.apps.playbacksensor.settings.Settings
 import pozzo.apps.tools.Log
 
 /**
  * todo there is still something funky going on, sometimes events are not really synced, can I use
  *  events value to validate it?
- * todo messy class, need a lot of refactoring
  */
 class SensorService : Service(), SensorEventListener {
     companion object {
@@ -36,8 +32,8 @@ class SensorService : Service(), SensorEventListener {
 
     private val eventHandler: EventHandler by inject()
     private val ignoreRequestHandler: IgnoreRequestHandler by inject()
-    private val firebaseAnalytics: FirebaseAnalytics by inject()
     private val serviceBusiness: ServiceBusiness by inject()
+    private val serviceLogger: ServiceLogger by inject()
 
     override fun onBind(intent: Intent?): IBinder = null!!
 
@@ -98,7 +94,7 @@ class SensorService : Service(), SensorEventListener {
         try {
             //todo are the values anyhow consistent between devices, so maybe I can use values instead of ignores
             eventHandler.lastValue = event.values[EVENT_INDEX]
-            logSensorEvent(event)
+            serviceLogger.logSensorEvent(event, eventHandler, ignoreRequestHandler)
 
             if (!ignoreRequestHandler.shouldProcessEvent()) {
                 return
@@ -112,26 +108,6 @@ class SensorService : Service(), SensorEventListener {
             e.printStackTrace()
             stopService()
         }
-    }
-
-    private fun logSensorEvent(event: SensorEvent) {
-        val bundle = Bundle()
-        bundle.putString("size", event.values.size.toString())
-        var values = ""
-        for ((i, value) in event.values.withIndex()) {
-            bundle.putString("value $i", value.toString())
-            values += "$i,"
-        }
-
-        bundle.putString("accuracy", event.accuracy.toString())
-        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "event")
-        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle)
-
-        Log.d("size: ${event.values.size} " +
-                "distance: $values " +
-                "accuracy: ${event.accuracy} " +
-                "storedValue ${eventHandler.storedValue} " +
-                "countIgnoreRequest ${ignoreRequestHandler.countIgnoreRequest}")
     }
 
     override fun onDestroy() {
