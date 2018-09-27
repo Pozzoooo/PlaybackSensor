@@ -16,7 +16,9 @@ import android.widget.Toast
 import com.crashlytics.android.Crashlytics
 import com.google.firebase.analytics.FirebaseAnalytics
 import org.koin.android.ext.android.inject
-import pozzo.apps.playbacksensor.*
+import pozzo.apps.playbacksensor.EventHandler
+import pozzo.apps.playbacksensor.IgnoreRequestHandler
+import pozzo.apps.playbacksensor.R
 import pozzo.apps.playbacksensor.settings.Settings
 import pozzo.apps.playbacksensor.settings.SettingsActivity
 import pozzo.apps.tools.Log
@@ -33,9 +35,10 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private var mSensorManager: SensorManager? = null
-    private lateinit var eventHandler: EventHandler
-    private lateinit var ignoreRequestHandler: IgnoreRequestHandler
-    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
+    private val eventHandler: EventHandler by inject()
+    private val ignoreRequestHandler: IgnoreRequestHandler by inject()
+    private val firebaseAnalytics: FirebaseAnalytics by inject()
     private val serviceBusiness: ServiceBusiness by inject()
 
     override fun onBind(intent: Intent?): IBinder = null!!
@@ -51,19 +54,8 @@ class SensorService : Service(), SensorEventListener {
     }
 
     private fun startService() {
-        setupFirebase()
-        setupHandlers()
         registerSensor()
         startForegroundServiceNotification()
-    }
-
-    private fun setupFirebase() {
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-    }
-
-    private fun setupHandlers() {
-        eventHandler = EventHandler(this)
-        ignoreRequestHandler = IgnoreRequestHandler(this)
     }
 
     private fun registerSensor() {
